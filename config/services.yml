@@ -1,0 +1,80 @@
+templates:
+  -
+    service: locustmaster
+    source: locust
+    condition: EnableTestCluster
+  -
+    service: locustslave
+    source: locust
+    condition: EnableTestCluster
+
+config:
+  build:
+    version: latest
+
+tasks:
+  locustmaster:
+    -
+      name: locust-master
+      image: ntosicbase2/locust:latest
+      mode: host
+      ports:
+        -
+          ContainerPort: 8089
+          targetgroup: true
+        # -
+        #   ContainerPort: 5557
+        #   targetgroup: PrivateTcp
+      memory: 2048
+      cpu: 512
+      env_vars:
+        -
+          Name: ENDPOINT
+          Value:
+            Fn::Join:
+              - "."
+              -
+                - "https://api"
+                -
+                  Ref: "EnvironmentName"
+                -
+                  Fn::FindInMap:
+                    - "AccountId"
+                    - Ref: "AWS::AccountId"
+                    - "DnsDomain"
+        -
+          Name: MODE
+          Value: --master
+    -
+      name: locust-slave
+      image: locust
+      memory: 1024
+      cpu: 512
+      env_vars:
+        -
+          Name: MODE
+          Value:
+            Fn::Join:
+              - ""
+              -
+                - "--slave "
+                - "--master-host="
+                -
+                  Ref : TestECSENIPrivateIpAddress
+  locustslave:
+    -
+      name: locust-slave
+      image: ntosicbase2/locust:latest
+      memory: 2048
+      cpu: 1024
+      env_vars:
+        -
+          Name: MODE
+          Value:
+            Fn::Join:
+              - ""
+              -
+                - "--slave "
+                - "--master-host="
+                -
+                  Ref : TestECSENIPrivateIpAddress

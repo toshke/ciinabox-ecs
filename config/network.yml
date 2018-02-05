@@ -67,3 +67,20 @@ securityGroups:
           ToPort: 5558
       ips:
         - stack
+
+targetgroups:
+  locustmaster:
+    loadbalancer: LocustMaster
+    healthcheck:
+      path: '/'
+    listeners:
+      - http
+    conditions:
+      - host: 'locust.*'
+    priority: 12
+  locustMaster:
+    loadbalancer: LocustSlaveNetwork
+    healthcheck:
+      protocol: tcp
+      port: 5557
+    protocol: tcp

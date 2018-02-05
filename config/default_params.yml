@@ -61,6 +61,9 @@ ecs:
 lambdaSubnets:
   SubnetOctetA: "4"
   SubnetOctetB: "5"
+loadTestingSubnets:
+  SubnetOctetA: "6"
+  SubnetOctetB: "7"
 
 #ciinabox environment config
 Mappings:
@@ -73,6 +76,8 @@ Mappings:
       SubnetMask: 26
       NatInstanceType: t2.micro
       ECSInstanceType: t2.large
+      LocustMasterInstanceType: t2.medium
+      LocustSlaveInstanceType: t2.small
 
 #Amazon Linux AMI 2015.03.1 (HVM), SSD Volume Type
 natAMI:

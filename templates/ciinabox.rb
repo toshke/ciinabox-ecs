@@ -10,6 +10,8 @@ CloudFormation do
     Type 'AWS::ECS::Cluster'
   }
 
+  Mapping('EnvironmentType',Mappings['EnvironmentType'])
+
   # VPC Stack
   Resource('VPCStack') {
     Type 'AWS::CloudFormation::Stack'
@@ -22,14 +24,33 @@ CloudFormation do
     Type 'AWS::CloudFormation::Stack'
     Property('TemplateURL', "https://#{source_bucket}.s3.amazonaws.com/ciinabox/#{ciinabox_version}/ecs-cluster.json")
     Property('TimeoutInMinutes', 5)
-    Property('Parameters',{
-      ECSCluster: Ref(cluster_name),
-      VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
-      RouteTablePrivateA: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateA'),
-      RouteTablePrivateB: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateB'),
-      SubnetPublicA: FnGetAtt('VPCStack', 'Outputs.SubnetPublicA'),
-      SubnetPublicB: FnGetAtt('VPCStack', 'Outputs.SubnetPublicB'),
-      SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane')
+    Property('Parameters', {
+        ECSCluster: Ref(cluster_name),
+        VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
+        RouteTablePrivateA: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateA'),
+        RouteTablePrivateB: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateB'),
+        SubnetPublicA: FnGetAtt('VPCStack', 'Outputs.SubnetPublicA'),
+        SubnetPublicB: FnGetAtt('VPCStack', 'Outputs.SubnetPublicB'),
+        SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane')
+    })
+  }
+
+  Resource('ECSLoadTesting') {
+    Type 'AWS::CloudFormation::Stack'
+    Property('TemplateURL', "https://#{source_bucket}.s3.amazonaws.com/ciinabox/#{ciinabox_version}/ecs-locust-loadtesting.json")
+    Property('TimeoutInMinutes', 5)
+    Property('Parameters', {
+        VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
+        StackOctet: FnFindInMap('EnvironmentType','ciinabox','StackOctet'),
+        EnvironmentType: 'ciinabox',
+        EnvironmentName: 'ciinabox',
+        RouteTablePrivateA: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateA'),
+        RouteTablePrivateB: FnGetAtt('VPCStack', 'Outputs.RouteTablePrivateB'),
+        SubnetPublicA: FnGetAtt('VPCStack', 'Outputs.SubnetPublicA'),
+        SubnetPublicB: FnGetAtt('VPCStack', 'Outputs.SubnetPublicB'),
+        SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane'),
+        SecurityGroupOps: FnGetAtt('VPCStack', 'Outputs.SecurityGroupOps'),
+        SecurityGroupDev: FnGetAtt('VPCStack', 'Outputs.SecurityGroupDev')
     })
   }
 
@@ -38,29 +59,29 @@ CloudFormation do
     Type 'AWS::CloudFormation::Stack'
     Property('TemplateURL', "https://#{source_bucket}.s3.amazonaws.com/ciinabox/#{ciinabox_version}/ecs-services.json")
     Property('TimeoutInMinutes', 5)
-    Property('Parameters',{
-      ECSCluster: Ref(cluster_name),
-      VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
-      SubnetPublicA: FnGetAtt('VPCStack', 'Outputs.SubnetPublicA'),
-      SubnetPublicB: FnGetAtt('VPCStack', 'Outputs.SubnetPublicB'),
-      ECSSubnetPrivateA: FnGetAtt('ECSStack', 'Outputs.ECSSubnetPrivateA'),
-      ECSSubnetPrivateB: FnGetAtt('ECSStack', 'Outputs.ECSSubnetPrivateB'),
-      ECSENIPrivateIpAddress: FnGetAtt('ECSStack', 'Outputs.ECSENIPrivateIpAddress'),
-      SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane'),
-      SecurityGroupOps: FnGetAtt('VPCStack', 'Outputs.SecurityGroupOps'),
-      SecurityGroupDev: FnGetAtt('VPCStack', 'Outputs.SecurityGroupDev'),
-      SecurityGroupNatGateway: FnGetAtt('VPCStack', 'Outputs.SecurityGroupNatGateway')
+    Property('Parameters', {
+        ECSCluster: Ref(cluster_name),
+        VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
+        SubnetPublicA: FnGetAtt('VPCStack', 'Outputs.SubnetPublicA'),
+        SubnetPublicB: FnGetAtt('VPCStack', 'Outputs.SubnetPublicB'),
+        ECSSubnetPrivateA: FnGetAtt('ECSStack', 'Outputs.ECSSubnetPrivateA'),
+        ECSSubnetPrivateB: FnGetAtt('ECSStack', 'Outputs.ECSSubnetPrivateB'),
+        ECSENIPrivateIpAddress: FnGetAtt('ECSStack', 'Outputs.ECSENIPrivateIpAddress'),
+        SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane'),
+        SecurityGroupOps: FnGetAtt('VPCStack', 'Outputs.SecurityGroupOps'),
+        SecurityGroupDev: FnGetAtt('VPCStack', 'Outputs.SecurityGroupDev'),
+        SecurityGroupNatGateway: FnGetAtt('VPCStack', 'Outputs.SecurityGroupNatGateway')
     })
   }
 
   #These are the commona params for use below in "foreign templates
   base_params = {
-    VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
-    SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane'),
-    SecurityGroupOps: FnGetAtt('VPCStack', 'Outputs.SecurityGroupOps'),
-    SecurityGroupDev: FnGetAtt('VPCStack', 'Outputs.SecurityGroupDev'),
-    EnvironmentType: 'ciinabox',
-    EnvironmentName: 'ciinabox'
+      VPC: FnGetAtt('VPCStack', 'Outputs.VPCId'),
+      SecurityGroupBackplane: FnGetAtt('VPCStack', 'Outputs.SecurityGroupBackplane'),
+      SecurityGroupOps: FnGetAtt('VPCStack', 'Outputs.SecurityGroupOps'),
+      SecurityGroupDev: FnGetAtt('VPCStack', 'Outputs.SecurityGroupDev'),
+      EnvironmentType: 'ciinabox',
+      EnvironmentName: 'ciinabox'
   }
 
   availability_zones.each do |az|
@@ -81,14 +102,14 @@ CloudFormation do
   #  new stack
 
   if defined? extra_stacks
-    extra_stacks.each do | stack, details |
+    extra_stacks.each do |stack, details|
 
       #Note: each time we use base_params we need to clone
       #assignment for hash is a shalow copy
       #we could also use z = Hash[x] or  Marshal.load(Marshal.dump(original_hash))
       #also add any params from the config
       params = base_params.clone
-      params.merge!details["parameters"] if details["parameters"]
+      params.merge! details["parameters"] if details["parameters"]
 
       #if file_name not applied assume stack name = file_name
       file_name = details["file_name"] ? details["file_name"] : stack

@@ -1,0 +1,28 @@
+## Applies to all
+default_policies:
+  - ec2-describe
+  - s3-list-buckets
+  - s3-chef-ro
+  - s3-codedeploy-ro
+  - cloudwatch-logs
+  - cloudwatch-monitoring
+
+# Per group policies
+group_policies:
+  bastion:
+    - associate-address
+    - s3-secrets-ro
+  ecs:
+    - ecs-service-role
+    - attach-network-interface
+    - attach-ebs-volume
+    - ecr-pull-images
+    - sns-publish
+  services:
+    - ecs-service-role
+
+
+custom_policies:
+  sns-publish:
+    action:
+      - sns:*

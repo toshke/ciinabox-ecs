@@ -66,7 +66,11 @@ namespace :ciinabox do
     tmp_file = write_config_tmp_file(config)
 
     CfnDsl::RakeTask.new do |t|
-      extras = [[:yaml,'config/default_params.yml'],[:yaml,'config/network.yml']]
+      extras = [
+          [:yaml,'config/default_params.yml'],
+          [:yaml,'config/network.yml'],
+          [:yaml,'config/services.yml']
+      ]
       if File.exist? "#{ciinaboxes_dir}/ciinabox_config.yml"
         extras << [:yaml, "#{ciinaboxes_dir}/ciinabox_config.yml"]
       end
