@@ -418,15 +418,26 @@ namespace :ciinabox do
 
     puts result
 
-    stack_names = JSON.parse(result) 
+    stack_names = JSON.parse(result)
 
-    stack_names.each do |stack_name| 
+    stack_names.each do |stack_name|
       if stack_name['ciinabox-bastion'] #need to change
-        puts "found the stack"
+        # update the stack with cf=true
 
-
-        # update-stack --stack-name stack_name
-
+        # status, result = aws_execute( config, ['cloudformation', 'update-stack',
+        #   "--stack-name #{stack_name}",
+        #   "--parameters",
+        #   "ParameterKey=EnvironmentName,ParameterValue=string,UsePreviousValue=true,ResolvedValue=string",
+        #   "ParameterKey=EnvironmentType,ParameterValue=string,UsePreviousValue=true,ResolvedValue=string",
+        #   "ParameterKey=LB,ParameterValue=true,UsePreviousValue=true,ResolvedValue=string" #value of LB
+        # ])
+        puts result
+        if status > 0
+          puts "fail to update"
+          exit status
+        else
+          puts "success to update"
+        end
 
       end
     end
@@ -437,6 +448,37 @@ namespace :ciinabox do
   desc('stop resources - asg + lb')
   task :stop do
 
+      # Use cfn_manage gem for this
+      check_active_ciinabox(config)
+      status, result = aws_execute( config, ['cloudformation', 'describe-stacks',
+        "--query 'Stacks[*].StackName'"
+      ])
+
+      puts result
+
+      stack_names = JSON.parse(result)
+
+      stack_names.each do |stack_name|
+        if stack_name['ciinabox-bastion'] #need to change
+          # update the stack with cf=true
+
+          # status, result = aws_execute( config, ['cloudformation', 'update-stack',
+          #   "--stack-name #{stack_name}",
+          #   "--parameters",
+          #   "ParameterKey=EnvironmentName,ParameterValue=string,UsePreviousValue=true,ResolvedValue=string",
+          #   "ParameterKey=EnvironmentType,ParameterValue=string,UsePreviousValue=true,ResolvedValue=string",
+          #   "ParameterKey=LB,ParameterValue=false,UsePreviousValue=true,ResolvedValue=string" #value of LB
+          # ])
+          puts result
+          if status > 0
+            puts "fail to update"
+            exit status
+          else
+            puts "success to update"
+          end
+
+        end
+      end
 
 
   end
@@ -449,9 +491,65 @@ namespace :ciinabox do
   end
 
   desc('warm up. increase asg')
-  task :runtest do
+  task :warmup do
 
-    
+      desired = ARGV[1]
+
+      if !desired
+        puts "Usage:"
+        puts "rake ciinabox:warmup <desired>"
+        exit 1
+      end
+
+
+      check_active_ciinabox(config)
+      status, result = aws_execute( config, ['cloudformation', 'describe-stacks',
+        "--query 'Stacks[*].StackName'"
+      ])
+
+      if status > 0
+        puts "failed to describe instance"
+        exit status
+      else
+        puts "success to update"
+      end
+
+      puts result
+
+      stack_names = JSON.parse(result)
+
+      stack_names.each do |stack_name|
+        if stack_name['ciinabox-ECSStack'] #need to change
+          # update the stack with cf=true
+
+          status, results = aws_execute( config, ['cloudformation', 'describe-stack-resources',
+            "--stack-name #{stack_name}",
+            "--query 'StackResources[*].{AutoScalingGroup:ResourceType,PhysicalResourceId:PhysicalResourceId}'"
+          ])
+
+          resources = JSON.parse(results)
+          resources.each do |resource|
+
+
+              if resource['AutoScalingGroup']['AutoScalingGroup']
+                  puts resource['AutoScalingGroup']
+
+
+                  #change asg to
+                  status, result3 = aws_execute( config, ['autoscaling', 'update-auto-scaling-group',
+                    "--auto-scaling-group-name #{resource['PhysicalResourceId']}",
+                    "--min-size #{desired}"
+                    "--max-size #{desired}"
+                    "--desired-capacity #{desired}"
+                  ])
+
+              end
+          end
+
+        end
+      end
+
+
 
   end
 
