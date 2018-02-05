@@ -522,4 +522,43 @@ namespace :ciinabox do
     result = system(cmd)
     exit -1 if not result
   end
+
+
+  desc('start resources - asg + lb')
+  task :up do
+
+
+
+  end
+
+
+  desc('stop resources - asg + lb')
+  task :stop do
+
+
+
+  end
+
+  desc('copy configuration to s3')
+  task :publish do
+
+
+
+  end
+
+  desc('warm up. increase asg')
+  task :runtest do
+
+    
+
+  end
+
+  desc('start testing')
+  task :runtest do
+
+
+
+  end
+
+
 end
