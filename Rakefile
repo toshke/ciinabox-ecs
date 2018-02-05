@@ -311,20 +311,6 @@ namespace :ciinabox do
     end
   end
 
-  desc('Turn off your ciinabox environment')
-  task :down do
-    # Use cfn_manage gem for this
-    command = 'stop'
-    start_stop_env(command, config)
-  end
-
-  desc('Turn on your ciinabox environment')
-  task :up do
-    # Use cfn_manage gem for this
-    command = 'start'
-    start_stop_env(command, config)
-  end
-
   desc('Deletes/tears down the ciinabox environment')
   task :tear_down do
     check_active_ciinabox(config)
@@ -417,6 +403,59 @@ namespace :ciinabox do
 
   end
 
+  desc('start resources - asg + lb')
+  task :up do
+    # Use cfn_manage gem for this
+    check_active_ciinabox(config)
+    status, result = aws_execute( config, ['cloudformation', 'describe-stacks',
+      "--query 'Stacks[*].StackName'"
+    ])
+
+    puts result
+
+    stack_names = JSON.parse(result) 
+
+    stack_names.each do |stack_name| 
+      if stack_name['ciinabox-bastion'] #need to change
+        puts "found the stack"
+
+
+        # update-stack --stack-name stack_name
+
+
+      end
+    end
+
+  end
+
+
+  desc('stop resources - asg + lb')
+  task :stop do
+
+
+
+  end
+
+  desc('copy configuration to s3')
+  task :publish do
+
+
+
+  end
+
+  desc('warm up. increase asg')
+  task :runtest do
+
+    
+
+  end
+
+  desc('start testing')
+  task :runtest do
+
+
+
+  end
 
 
   def check_active_ciinabox(config)
@@ -524,41 +563,7 @@ namespace :ciinabox do
   end
 
 
-  desc('start resources - asg + lb')
-  task :up do
 
-
-
-  end
-
-
-  desc('stop resources - asg + lb')
-  task :stop do
-
-
-
-  end
-
-  desc('copy configuration to s3')
-  task :publish do
-
-
-
-  end
-
-  desc('warm up. increase asg')
-  task :runtest do
-
-    
-
-  end
-
-  desc('start testing')
-  task :runtest do
-
-
-
-  end
 
 
 end
