@@ -3,3 +3,4 @@ Gemfile.lock
 ciinaboxes/
 ciinaboxes
 ssl/
+config/local.yml

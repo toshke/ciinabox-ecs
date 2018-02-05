@@ -1,0 +1,36 @@
+loadbalancers:
+  -
+    name: MasterPublic
+    records:
+      - locust
+    idle_timeout: 120
+    master_targetgroup:
+      healthcheck:
+        path: '/'
+      port: 80
+    listeners:
+      -
+        name: http
+        port: 80
+        protocol: http
+      -
+        name: https
+        port: 443
+        protocol: https
+  -
+    name: SlaveNetwork
+    records:
+      - locustMaster
+    type: network
+    internal: true
+    slave_targetgroup:
+      healthcheck:
+        protocol: tcp
+        threshold_count: 3
+      port: 80
+      protocol: tcp
+    listeners:
+      -
+        name: tcp
+        port: 5557
+        protocol: tcp
