@@ -2,6 +2,7 @@ require 'cfndsl'
 require_relative '../ext/helper.rb'
 require_relative '../ext/az.rb'
 require_relative '../ext/cloudwatch.rb'
+require_relative '../ext/utils.rb'
 require_relative '../ext/sg.rb'
 
 CloudFormation do

@@ -9,31 +9,29 @@ loadbalancers:
     records:
       - locust
     idle_timeout: 120
-    master_targetgroup:
+    default_targetgroup:
+      protocol: http
       healthcheck:
-        path: '/'
-      port: 80
+        port: 80
+        protocol: http
+        threshold_count: 3
     listeners:
       -
         name: http
         port: 80
         protocol: http
-      -
-        name: https
-        port: 443
-        protocol: https
   -
     name: LocustSlaveNetwork
     records:
       - locustMaster
     type: network
     internal: true
-    slave_targetgroup:
+    default_targetgroup:
+      protocol: tcp
       healthcheck:
         protocol: tcp
+        port: 5557
         threshold_count: 3
-      port: 80
-      protocol: tcp
     listeners:
       -
         name: tcp
@@ -78,7 +76,7 @@ targetgroups:
     conditions:
       - host: 'locust.*'
     priority: 12
-  locustMaster:
+  locustslave:
     loadbalancer: LocustSlaveNetwork
     healthcheck:
       protocol: tcp
