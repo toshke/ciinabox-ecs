@@ -1,5 +1,8 @@
 require 'cfndsl'
 require_relative '../ext/helper.rb'
+require_relative '../ext/az.rb'
+require_relative '../ext/cloudwatch.rb'
+require_relative '../ext/sg.rb'
 
 CloudFormation do
   AWSTemplateFormatVersion '2010-09-09'
@@ -16,7 +19,7 @@ CloudFormation do
 
   # Global mappings
   Mapping('EnvironmentType', Mappings['EnvironmentType'])
-  Mapping('TestAMI', ecsAMI)
+  Mapping('TestAMI', ecs_ami)
 
   availability_zones.each do |az|
     Resource("SubnetPrivate#{az}") {
@@ -355,7 +358,8 @@ CloudFormation do
       Type "AWS::EC2::SecurityGroup"
       Property("VpcId", Ref("VPC"))
       Property("GroupDescription", "Access to #{lb["name"]} LoadBalancer")
-      Property("SecurityGroupIngress", sg_create_rules(securityGroups["#{lb["name"]}LB"]))
+
+      Property("SecurityGroupIngress", sg_create_rules(securityGroups["#{lb["name"]}"]))
       Property("Tags", [
         { Key: "Name", Value: FnJoin('-', [ Ref("EnvironmentName"), "#{lb["name"]}" ]) },
         { Key: "Environment", Value: Ref("EnvironmentName") },

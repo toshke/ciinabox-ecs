@@ -1,6 +1,11 @@
+stacks:
+  test:
+    subnet_allocation: 15
+
+
 loadbalancers:
   -
-    name: MasterPublic
+    name: LocustMaster
     records:
       - locust
     idle_timeout: 120
@@ -18,7 +23,7 @@ loadbalancers:
         port: 443
         protocol: https
   -
-    name: SlaveNetwork
+    name: LocustSlaveNetwork
     records:
       - locustMaster
     type: network
@@ -34,3 +39,31 @@ loadbalancers:
         name: tcp
         port: 5557
         protocol: tcp
+
+securityGroups:
+  LocustMaster:
+    -
+      rules:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        -
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      ips:
+        - 0.0.0.0/0
+  LocustSlaveNetwork:
+    -
+      rules:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        -
+          IpProtocol: tcp
+          FromPort: 5557
+          ToPort: 5558
+      ips:
+        - stack
